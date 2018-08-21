@@ -2,7 +2,8 @@ from urllib.request import Request, urlopen
 import json
 import sys
 import getopt
-from datetime import date
+from time import sleep
+from datetime import date, datetime
 
 def main():
     try:
@@ -20,8 +21,43 @@ def main():
         return None
 
 def check_class(course, section, formatted_semester):
-    base_url = "https://app.testudo.umd.edu/soc/search?courseId={course}&sectionId={section}&termId=201808&_openSectionsOnly=on&creditCompare=&credits=&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on"
-    pass
+    section_code = '<spanclass="section-id">' + section
+    seats_code = '<spanclass="open-seats-count">'
+    base_url = f"https://app.testudo.umd.edu/soc/search?courseId={course}&sectionId={section}&termId=201808&_openSectionsOnly=on&creditCompare=&credits=&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on"
+    request = Request(base_url, headers={'User-Agent': 'scheduleUMD'})
+
+    while True:
+        # Get site HTML
+        with urlopen(request) as resp:
+            site = resp.read()
+            encode = resp.headers.get_content_charset('utf-8')
+            site = site.decode(encode)
+            site = "".join(site.split())
+
+        try:
+            # TODO: use umd.io when it's not broken
+
+            # Find section within HTML
+            find_section = site.find(section_code)
+
+            # Get seat count for specified section
+            find_seats = find_section + site[find_section:].find(seats_code)
+            find_seats += len(seats_code)
+            open_seats = int(site[find_seats])
+            
+            # If there's a seat, alert user and return
+            if open_seats:
+                print("Open Seat Exists! You can get in!")
+                return
+            
+            # Else, sleep for 5 minutes and try again.
+            print(f"No seats at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}. Checking in 5 minutes...")
+            sleep(300)
+        except Exception as e: # Gather possibilities
+            # Can happen if section doesn't exist
+            print("Unexpected error occurred. Exiting...")
+            print(e)
+            return
 
 def format_semester(semester):
     # Returns the semester in the format that the schedule of classes expects:

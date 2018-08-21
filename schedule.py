@@ -2,61 +2,68 @@ import urllib.request
 import json
 import sys
 import getopt
-import datetime
+from datetime import date
 
 def main():
     try:
-        args = semester, course, section, begin, end, days = get_args() # Grab command-line args    
-
+        args = semester, course, section = get_args() # Grab command-line args    
         (result, message) = validate_args(args)
         if result:
-            print("all good so far")
-            find_class(args)
+            formatted_semester = format_semester(semester)
+            find_class(course, section, formatted_semester)
             pass # THEN??
             # ^ class = find_class(args) --- might be a list??? multiple sections may appear
             # give user numbered list, ask them to choose their ideal section if applicable
             # ask user for email/phone#
         else:
-            print(f"Error: {message}") # from validate_args()
-
+            raise ValueError(message)
     except Exception as e: # specify
-        print(f"ERROR: {e}") # from getargs??
+        print(f"Error: {e}")
         return None
 
-def find_class(args):
-    semester, course, section, begin, end, days = args
+def find_class(course, section, formatted_semester):
+    base_url = "https://app.testudo.umd.edu/soc/search?courseId={course}&sectionId={section}&termId=201808&_openSectionsOnly=on&creditCompare=&credits=&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on"
     pass
 
-def format_semester():
+def format_semester(semester):
+    # Returns the semester in the format that the schedule of classes expects:
+    # semesterYY
+    semester = semester.lower()
+    year = date.today().strftime("%y")
     # Returns the current semester based on the current date
-    
+    if semester in ("fall", "winter", "spring", "summer"):
+        if semester == "fall":
+            return "08" + year
+        elif semester == "winter":
+            return "12" + year
+        elif semester == "spring":
+            return "01" + year
+        else:
+            return "05" + year
+    else:
+        raise ValueError("You've entered an invalid semester! Run program with flag --help to see all options.")
     pass
 
 def validate_args(args):
     # Checks to see if the required arguments were received
-    term, course, section, begin, end, days = args
+    term, course, section = args
 
     # Must specify a specific semester (fall, spring, winter, summer)
     if not term:
-        return (False, "You must specify a semester.")
+        return (False, "You must specify a semester")
     # Must specify a course
     if not course:
-        return (False, "You must specify a course.")
+        return (False, "You must specify a course")
     # Must specify a section
     if not section:
-        return (False, "You must specify a section.")
-    # Must have a start and end time if any time is specified
-    if begin and not end or end and not begin:
-        # find better exception / make own exception
-        return (False, "You must either set a beginning and end time or no time at all.")
-        #                       ^^^^^^^^^^^^^^^^^ REPHRASE THIS ^^^^^^^^^^^^^^^^^
+        return (False, "You must specify a section")
     return (True, "Successful!")
 
 def get_args():
     try:
-        term, course, section, begin, end, days = None, None, None, None, None, None
+        term, course, section = None, None, None
         #course_set, section_set, begin_set, end_set, days_set = False, False, False, False, False
-        opts, _ = getopt.getopt(sys.argv[1:], "t:c:s:b:e:d:h", ["term=", "course=", "section=", "begin=", "end=", "days=", "help"])                           
+        opts, _ = getopt.getopt(sys.argv[1:], "t:c:s:h", ["term=", "course=", "section=", "help"])                           
 
         # Set boolean flags for each short/longopt
         for opt, arg in opts:
@@ -66,25 +73,14 @@ def get_args():
                 course = arg
             elif opt in ("-s", "--section"):
                 section = arg
-            elif opt in ("-b", "--begin"):
-                begin = arg
-            elif opt in ("-e", "--end"):
-                end = arg
-            elif opt in ("-d", "--days"):
-                days = arg
             elif opt in ("-h", "--help"):
                 # Give user list of commands
                 pass
             else:
-                pass
-                # user gave unspecified arg
-        return (term, course, section, begin, end, days)
+                raise ValueError("You've entered an invalid argument. Run program with flag --help to see all options.")
+        return (term, course, section)
     except getopt.GetoptError as e:
-        print(f"GETOPT ERROR: {e}")
-        sys.exit(-1) # right thing to do, or is there a better way?
-    except Exception as e:
-        print(e)
-        sys.exit(-1)
+        raise ValueError(e) from None
 
 if __name__ == "__main__":
     main()

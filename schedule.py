@@ -4,6 +4,8 @@ import sys
 import getopt
 from time import sleep
 from datetime import date, datetime, timedelta
+from twilio.rest import Client
+from auth import account_sid, auth_token, twilio_num, your_number
 
 def main():
     try:
@@ -19,6 +21,11 @@ def main():
         print(f"Error: {e}")
         usage()
         return None
+
+def send_message(message):
+    # Sends the user a specified message
+    client = Client(account_sid, auth_token)
+    client.messages.create(body=message, from_=twilio_num, to=your_number)
 
 def check_class(course, section, formatted_semester):
     section_code = '<spanclass="section-id">' + section
@@ -51,7 +58,7 @@ def check_class(course, section, formatted_semester):
             
             # If there's a seat, alert user and return
             if open_seats:
-                print("Open Seat Exists! You can get in!")
+                send_message(f"Open seat found for section {section} of {course}!")
                 return
             
             # Else, sleep for 5 minutes and try again.

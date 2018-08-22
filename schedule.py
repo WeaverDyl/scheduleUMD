@@ -60,6 +60,7 @@ def check_class(course, section, formatted_semester):
             
             # If there's a seat, alert user and return
             if open_seats:
+                print(f"Open seat found for section {section} of {course}! Sending message...")
                 send_message(f"Open seat found for section {section} of {course}!")
                 return
             

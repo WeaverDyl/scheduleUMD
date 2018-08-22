@@ -9,7 +9,14 @@ scheduleUMD is a simple tool to solve a big problem (for college students): gett
 ## Usage
 To begin, you must have the [Twilio Python Helper Library](https://www.twilio.com/docs/libraries/python) installed. This can be done using `pip install twilio`.
 
-Once the Twilio library is installed, you can run the program using the standard `python schedule.py` command.
+Once the Twilio library is installed, add a `auth.py` file to the same directory as the `schedule.py` program. fill the file in this format:
+    
+	account_sid = ""
+    auth_token = ""
+    twilio_num = "+1" # Enter your Twilio phone number
+    your_number = "+1" # Enter your own phone number
+
+Then, you can run the program using the standard `python schedule.py` command.
 
 You must provide three command line arguments (whose parsing will soon be rewritten from using getopts to argparse):
 

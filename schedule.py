@@ -28,6 +28,8 @@ def send_message(message):
     client.messages.create(body=message, from_=twilio_num, to=your_number)
 
 def check_class(course, section, formatted_semester):
+    # Checks the number of seats in a section and sends the user a text message
+    # when a seat is available.
     section_code = '<spanclass="section-id">' + section
     seats_code = '<spanclass="open-seats-count">'
     base_url = f"https://app.testudo.umd.edu/soc/search?courseId={course}&sectionId={section}&termId=201808&_openSectionsOnly=on&creditCompare=&credits=&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on"
@@ -133,6 +135,7 @@ def validate_args(args):
     return (True, "Successful!")
 
 def get_args():
+    # Gets the command line arguments given by the user
     try:
         term, course, section = None, None, None
         #course_set, section_set, begin_set, end_set, days_set = False, False, False, False, False

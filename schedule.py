@@ -1,25 +1,22 @@
+import json, sys, getopt, argparse
 from urllib.request import Request, urlopen
-import json
-import sys
-import getopt
 from time import sleep
 from datetime import date, datetime, timedelta
 from twilio.rest import Client
-from auth import account_sid, auth_token, twilio_num, your_number
+
+try:
+    from auth import account_sid, auth_token, twilio_num, your_number
+except ImportError:
+    raise IOError("Create a `auth.py` file with fields according to the README instructions.")
 
 def main():
     try:
-        args = semester, year, course, section = get_args() # Grab command-line args    
-        (result, message) = validate_args(args)
-        if result:
-            formatted_semester = format_semester(semester, year)
-            check_class(course, section, formatted_semester)
-            return
-        else:
-            raise ValueError(message)
+        args = get_args() # Grab command-line args
+        formatted_semester = format_semester(args.term, args.year)
+        check_class(args.course, args.section, formatted_semester)
+        return
     except Exception as e: # specify
         print(f"Error: {e}")
-        usage()
         return None
 
 def send_message(message):
@@ -79,25 +76,27 @@ def format_semester(semester, year):
     # Returns the semester in the format that the schedule of classes expects:
     # semesterYY
     semester = semester.lower()
+    old_year = year
+    year = year[len(year) - 2:] # Convert year to 2-digit form (2011 -> 11)
     # Returns the current semester based on the current date
     if semester in ("fall", "winter", "spring", "summer"):
         if semester == "fall":
             month = "08"
         elif semester == "winter":
             month = "12"
-            year = str(int(year) - 1)
+            year = str(int(year) - 1) # Recalculate year (winter 2018 = 201712)
         elif semester == "spring":
             month = "01"
         else:
             month = "05" # Summer
     else:
-        raise ValueError("That semester is invalid")
+        raise ValueError(f"{semester} is an invalid semester")
 
     # Check that the semester hasn't already happened
     if validate_semester(month, year):
-        return month + year
+        return month + year[len(year) - 2:]
     else:
-        raise ValueError("That semester is too far from the current date.")
+        raise ValueError(f"{semester} {old_year} is too far from the current date.")
 
 def validate_semester(month, year):
     # Checks if the date provided is close to the dates given by the schedule
@@ -120,55 +119,14 @@ def validate_semester(month, year):
     except Exception:
         raise
 
-def validate_args(args):
-    # Checks to see if the required arguments were received
-    term, year, course, section = args
-
-    # Must specify a specific semester (fall, spring, winter, summer)
-    if not term or not year:
-        return (False, "You must specify a semester and year")
-    # Must specify a course
-    if not course:
-        return (False, "You must specify a course")
-    # Must specify a section
-    if not section:
-        return (False, "You must specify a section")
-    return (True, "Successful!")
-
 def get_args():
-    # Gets the command line arguments given by the user
-    try:
-        term, course, section = None, None, None
-        #course_set, section_set, begin_set, end_set, days_set = False, False, False, False, False
-        opts, _ = getopt.getopt(sys.argv[1:], "t:c:s:h", ["term=", "course=", "section=", "help"])                           
-    except getopt.GetoptError as e:
-        raise ValueError(e) from None
-
-    # Set boolean flags for each short/longopt
-    for opt, arg in opts:
-        if opt in ("-t", "--term"):
-            term = arg[:len(arg) - 2]
-            year = arg[len(arg) - 2:]
-        elif opt in ("-c", "--course"):
-            course = arg
-        elif opt in ("-s", "--section"):
-            section = arg
-        elif opt in ("-h", "--help"):
-            usage()
-            sys.exit(2)
-        else:
-            raise ValueError("You've entered an invalid argument.")
-    return (term, year, course, section)
-
-def usage():
-    # Print the directions to use the program
-    print(f"\nusage: {sys.argv[0]} -t TERM -c COURSE -s SECTION")
-    print("Further Explanation:\n-t / --term\t: refers to the current semester and year."\
-          "Valid input is:\n\t\t  Fall## | Spring## | Winter## | Summer## (ex. fall18)")
-    print("-c / --course\t: refers to the course department and number. An example is 'ENGL101'."\
-          "\n\t\t  Courses are 4 letters followed by 3 numbers.")
-    print("-s / --section\t: refers to the section of the course. Sections are four digits, such "\
-          "as '0101'.")
+    # Sets up the command-line argument parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("term", help="The current semester (Fall/Spring/Winter/Summer)")
+    parser.add_argument("year", help="The current year (2018/2019/etc...)")
+    parser.add_argument("course", help="Stores course (ENGL101/CMSC131/etc...)")
+    parser.add_argument("section", help="Stores section (0101/0102/etc...)")
+    return parser.parse_args()
 
 if __name__ == "__main__":
     main()

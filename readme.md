@@ -18,15 +18,15 @@ Once the Twilio library is installed, add a `auth.py` file to the same directory
 
 Then, you can run the program using the standard `python schedule.py` command.
 
-You must provide three command line arguments (whose parsing will soon be rewritten from using getopts to argparse):
+You must provide three command line arguments:
 
-1. `-t / --term` refers to the current semester and year to search for. You can only search for current semesters, as past and future schedule of class's won't have waitlists. 
+1. The first argument you must provide is the current semester. This is one of `{Fall, Spring, Winter, Summer}`
 	1. The proper format for this argument is the current semester followed by the two-digit year corresponding to the semester. An example of this argument is: `fall18`.
 
-2. `-c / --course` refers to the department / course ID combo of the course you want to find a seat for.
-	1. The proper format for this argument is simply the course name, for example, `ENGL101`. Case does not matter.
+2. The second argument you must provide is the department / course ID combo of the course you want to find a seat for.
+	1. The proper format for this argument is simply the course name, for example, `ENGL101`.
 
-3. `-s / --section` refers to the 4 digit section of the course.
+3. Finally, the last argument is the 4 digit section number of the course.
 	1. An example for this argument is `0101`.
 
 There is also a 'help' argument to explain all of this.
@@ -35,11 +35,7 @@ There is also a 'help' argument to explain all of this.
 
 So, if you wanted to find a seat for the Fall 2018 offering of section 0101 of ENGL101, you would run the program as: 
 
-`python schedule.py -t fall18 -c engl101 -s 0101`
-
-or 
-
-`python schedule.py --term fall18 --course engl101 --section 0101` 
+`python schedule.py fall18 engl101 0101`
 
 ## Todo
 Eventually I want to rewrite this using the [UMD.io](https://github.com/umdio/umdio) API. Currently (as of 8/22/18), it seems to be having accuracy issues regarding course data. This prompted me to write scheduleUMD without any API, so much of the processing code is not easily readable.

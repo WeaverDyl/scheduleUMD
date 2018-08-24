@@ -32,9 +32,10 @@ def check_class(course, section):
             if data:
                 while True:
                     # If there's a seat, alert user and return
-                    if data["open_seats"] > 0:
+                    if int(data["open_seats"]) > 0:
                         print(f"Open seat found for section {section} of {course}! Sending message...")
                         send_message(f"Open seat found for section {section} of {course}!")
+                        return
                     else:
                         # Else, sleep for 5 minutes and try again.
                         print(f"No seats at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}. Checking in 5 minutes...")

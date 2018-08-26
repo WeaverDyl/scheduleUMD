@@ -40,9 +40,11 @@ def check_class(course, section):
                         # Else, sleep for 5 minutes and try again.
                         print(f"No seats at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}. Checking in 5 minutes...")
                         sleep(300)
+    except urllib.error.HTTPError as e:
+        print("Error: Invalid course or section")
+        return
     except Exception as e: # Gather possibilities
-        print("Unexpected error occurred. Exiting...")
-        print(e)
+        print(f"Error (unexpected): {e}. Exiting...")
         return
 
 def get_args():

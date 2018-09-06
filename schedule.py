@@ -23,7 +23,7 @@ def send_message(message):
     client.messages.create(body=message, from_=twilio_num, to=your_number)
 
 def check_class(course, section):
-    base_url = "https://bapi.umd.io/v0/courses/sections/"
+    base_url = "https://api.umd.io/v0/courses/sections/"
     url = base_url + course + "-" + section
     try:
         with urllib.request.urlopen(url) as url:
